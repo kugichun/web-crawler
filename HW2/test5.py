@@ -45,9 +45,3 @@ content = driver.page_source
 data = pd.read_html(content)
 table = pd.DataFrame(data[0])
 print(table)
-
-
-http = soup.find_all("a", class_="articleList_box")
-for link in http:
-    title = link.text
-    news_link = 'https://www.informationsecurity.com.tw'+link['href']
