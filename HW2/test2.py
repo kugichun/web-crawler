@@ -1,4 +1,8 @@
 #完整版
+#抓取網站:"https://www.informationsecurity.com.tw/article/article_list.aspx?mod=1"
+#能夠讀取網站中每一篇新聞的關鍵字，找出符合特定關鍵字的新聞，輸出其標題與連結至docx
+#然後設定他能夠經由每次執行取得更新的新聞，並insert至docx檔裡的頂部(此處設計為兩部分:"近期更新"&"過去資料")
+#能夠在不覆蓋原始資料的情況下新增資料
 import requests
 import pandas as pd
 import numpy as np
@@ -8,15 +12,15 @@ from docx import Document
 from docx.text.paragraph import Paragraph
 from docx.shared import Inches
 import re
-################################################################
-#收集多個瀏覽器的User-Agent，每次發起請求時隨機抽取一個使用，可以進一步提高安全性，並避免被封IP
 import requests,random
+################################################################
+
+#收集多個瀏覽器的User-Agent，每次發起請求時隨機抽取一個使用，可以進一步提高安全性，並避免被封IP
 user_agents = ['User-Agent:Mozilla/5.0 (Windows NT 6.1; rv:2.0.1) Gecko/20100101 Firefox/4.0.1','User-Agent:Mozilla/5.0 (Windows; U; Windows NT 6.1; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50','User-Agent:Opera/9.80 (Windows NT 6.1; U; en) Presto/2.8.131 Version/11.11']
 def get_html(url):
    headers = {'User-Agent':random.choice(user_agents)}
    resp = requests.get(url,headers = headers)
    return resp.text
-###############################################################
 
 #########################################################################
 # 定義函式，以取得html_page文本
@@ -31,7 +35,7 @@ def get_webpage(url):
         return html_page.text
 
 #########################################################################
-# 嘗試抓特定區塊資料
+# 嘗試抓文章特定區塊資料
 
 site = "https://www.informationsecurity.com.tw/article/json/ajax_list.aspx?mod=1"
 html = get_webpage(site)
@@ -40,11 +44,12 @@ soup = BeautifulSoup(html, "html.parser")
 # 標題+連結
 #http = soup.find_all("a", class_="articleList_box")
 http2 = soup.find("a", class_="articleList_box")
-news_link_0 = 'https://www.informationsecurity.com.tw'+http2['href'] #抓最新的那則新聞，目的是取出當中的最大index
+#抓最新的那則新聞，目的是取出當中的最大index
+news_link_0 = 'https://www.informationsecurity.com.tw'+http2['href'] 
 
-MaxIndex = re.findall(r"\d+", news_link_0)[0]
+MaxIndex = re.findall(r"\d+", news_link_0)[0] #最大索引值
 MaxIndex = int(MaxIndex)
-initial = 10500
+initial = 10500 #預設索引起點
 output="" 
 for i in range(0,MaxIndex-initial):
 
@@ -77,6 +82,7 @@ for i in range(0,MaxIndex-initial):
             print(news_link)  # 連結
             print("----------------------------------------------------------------")
             '''
+            #符合即輸出
             title = soup_in.find("h1", class_="title_content w_93").text
             news=title+"\n"+news_link+"\n------------------------------------------------------------------------------------------------\n"
             output=output+news
@@ -91,7 +97,8 @@ initial=MaxIndex #更新起點
         #print("不符")       
 #############################################################
 """
-# 第一次創建新word檔請用這段(請注意，會覆蓋，僅限第一次創建)
+# 第一次創建
+# 新word檔請用這段(請注意，會覆蓋，僅限第一次創建)
 # 輸出成word
  
 doc = docx.Document()
@@ -102,17 +109,17 @@ new=doc.add_paragraph(output)
 doc.save('result.docx')
 """
 ########################################################################
-# 第二次後更新word檔資料(請注意，須先具有第一次創建的檔案)
+# 第二次後
+# 更新word檔資料(請注意，須先具有第一次創建的檔案)
 # 輸出成word
 
 #取的原本的內文(目的是使新資料能夠insert到最前面，需要定位)
-if __name__ == '__main__':
-    # 獲取文檔
-    doc = docx.Document('result.docx')
-    # 輸出內容
-    data=''
-    for para in doc.paragraphs:
-        data=data+para.text
+
+doc = docx.Document('result.docx')
+# 輸出內容
+data=''
+for para in doc.paragraphs:
+    data=data+para.text
 #print(data)
 
 doc = docx.Document()
