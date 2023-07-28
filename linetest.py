@@ -8,6 +8,8 @@ from docx.text.paragraph import Paragraph
 from docx.shared import Inches
 import re
 import requests,random
+import time
+from datetime import datetime
 
 user_agents = ['User-Agent:Mozilla/5.0 (Windows NT 6.1; rv:2.0.1) Gecko/20100101 Firefox/4.0.1','User-Agent:Mozilla/5.0 (Windows; U; Windows NT 6.1; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50','User-Agent:Opera/9.80 (Windows NT 6.1; U; en) Presto/2.8.131 Version/11.11']
 def get_html(url):
@@ -41,9 +43,7 @@ def LineNotify(token, msg):
     r = requests.post("https://notify-api.line.me/api/notify", headers=headers, params=params)
 
 
-
-#########################################################################
-# 嘗試抓文章特定區塊資料
+############################ 嘗試抓文章特定區塊資料 ############################
 
 site = "https://www.informationsecurity.com.tw/article/json/ajax_list.aspx?mod=1"
 html = get_webpage(site)
@@ -58,14 +58,29 @@ news_link_0 = 'https://www.informationsecurity.com.tw'+http2['href']
 #讀取索引終點
 MaxIndex = re.findall(r"\d+", news_link_0)[0] #最大索引值
 MaxIndex = int(MaxIndex)
-
 #讀取索引起點
 f = open('initial.txt')
 Initial_Index=f.read()
 Initial_Index=int(Initial_Index)
 
+#抓年份日期
+date = time.ctime()
+date = date.split()
+#print(date[4])
+year = date[4]
 #讀取關鍵字
-f = open('list.txt',encoding="utf-8")
+f = open('list.txt')
+f=f.read()
+#print(f)
+#更新關鍵字年份
+obj = re.sub(str(int(year)-1),str(year),f)
+#print(obj)
+with open("list.txt","w") as file:
+    file.write(obj)
+
+#讀取關鍵字
+f = open('list.txt')
+#關鍵字輸出成list
 text = []
 for line in f.readlines():
     text.append(line)
@@ -76,6 +91,7 @@ for sub in text:
     list.append(sub.replace("\n", ""))
 print(list)
 
+#################################### 開始搜索 ####################################
 output="" 
 for i in range(0,MaxIndex-Initial_Index):
 
@@ -120,10 +136,6 @@ with open("initial.txt","w") as file:
     file.write(str(Initial_Index))
             
 ################################################
-
-
-
-
 """
  *              ,----------------,              ,---------,
  *         ,-----------------------,          ,"        ,"|
@@ -142,6 +154,58 @@ with open("initial.txt","w") as file:
  *   /  oooooooooooooooo  .o.  oooo /,   \,"-----------
  *  / ==ooooooooooooooo==.o.  ooo= //   ,`\--{)B     ,"
  * /_==__==========__==_ooo__ooo=_/'   /___________,"
+ *
+ *
+ *
+ *
+ *      ┌─┐       ┌─┐                           
+ *   ┌──┘ ┴───────┘ ┴──┐                           
+ *   │                 │                           
+ *   │       ───       │                           
+ *   │   >        <    │                           
+ *   │                 │                           
+ *   │   ...  ⌒  ...   │                                                    
+ *   │                 │
+ *   └───┐         ┌───┘
+ *       │         │
+ *       │         │
+ *       │         │
+ *       │         └──────────────┐
+ *       │                        │
+ *       │                        ├─┐
+ *       │                        ┌─┘
+ *       │                        │
+ *       └─┐  ┐  ┌───────┬──┐  ┌──┘
+ *         │ ─┤ ─┤       │ ─┤ ─┤
+ *         └──┴──┘       └──┴──┘
+ *               不要電我><
+ *               
+ *
+ *
+ *
+ *
+ *      ┌─┐       ┌─┐ + +
+ *   ┌──┘ ┴───────┘ ┴──┐++
+ *   │                 │
+ *   │       ───       │++ + + +
+ *   ███████───███████ │+
+ *   │                 │+
+ *   │       ─┴─       │
+ *   │                 │
+ *   └───┐         ┌───┘
+ *       │         │
+ *       │         │   + +
+ *       │         │
+ *       │         └──────────────┐
+ *       │                        │
+ *       │                        ├─┐
+ *       │                        ┌─┘
+ *       │                        │
+ *       └─┐  ┐  ┌───────┬──┐  ┌──┘  + + + +
+ *         │ ─┤ ─┤       │ ─┤ ─┤
+ *         └──┴──┘       └──┴──┘  + + + +
+ *           我要成為厲害的資安人
+ *              
  *
 
  """
